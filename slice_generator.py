@@ -14,6 +14,7 @@ from concurrent.futures import ProcessPoolExecutor, as_completed
 import multiprocessing
 from tqdm import tqdm
 import re
+from transform_lower_tesla import funcao_degradacao_brain
 
 # --- Configuracoes gerais ---
 ORIENTATIONS = {
@@ -47,18 +48,21 @@ def generate_and_crop_slices(img_data, name_prefix, output_dir, scales, selected
 
             base_name = f"{name_prefix}__{orientation_name}__slice_{i:03d}"
 
+            images = funcao_degradacao_brain(slice_data, preset="3T_T1W", save=False, seed=123)
+
             hr_path = os.path.join(output_dir, "HR", base_name + "__HR" + IMAGE_EXT)
             if not os.path.exists(hr_path) or force:
-                save_image(slice_data, hr_path)
+                # print(f"Salvando {hr_path}...")
+                save_image(images["imagem_7t"], hr_path)
                 log_slice(hr_path, force)
 
             for scale in scales:
-                low_res_size = (w // scale, h // scale)
+                # low_res_size = (w // scale, h // scale)
                 lr_dir = os.path.join(output_dir, f"LRx{scale}")
                 lr_path = os.path.join(lr_dir, base_name + f"__LRx{scale}" + IMAGE_EXT)
+                # print(f"Salvando {lr_path}...")
                 if not os.path.exists(lr_path) or force:
-                    lr_img = cv2.resize(slice_data, low_res_size, interpolation=cv2.INTER_AREA)
-                    save_image(lr_img, lr_path)
+                    save_image(images["imagem_3t"], lr_path)
                     log_slice(lr_path, force)
 
 def process_file(nii_path, output_dir, scales, selected_orientations, force, normalize, to_uint8):
@@ -120,8 +124,7 @@ def prepare_keys(img_path_list_or_folder):
     keys = [normalize_key(p) for p in img_path_list]
     return img_path_list, keys
 
-
-def create_lmdb(output_dir, scales, division=(0.7, 0.2, 0.1)):
+def create_lmdb(output_dir, scales, division=(0.4, 0.3, 0.3)):
     """Cria LMDBs para HR e múltiplos LR, com splits consistentes e verificação prévia."""
 
     def strip_resolution_tag(filename):

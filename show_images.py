@@ -5,12 +5,28 @@ import matplotlib.pyplot as plt
 orientation = 'sagittal'   # ou 'coronal' ou 'sagittal'
 # =========================================================
 
-# Carrega imagem
-img = nib.load("ds006001/sub-C1/anat/sub-C1_acq_FLASH20_200um.nii.gz")
+path = "ds006001/anat/sub-C1_acq_FLASH20_200um.nii.gz"
+# path = "ds005533/sub-01/ses-nocap/anat/sub-01_ses-nocap_T1w.nii.gz"
+# Voxel size (mm): (1.0, 1.0, 1.0)
+# Image shape: (176, 256, 256)
+# path = "ds002675/sub-c01/anat/sub-c01_T1w.nii.gz"
+# Voxel size (mm): (1.0, 1.0, 1.0)
+# Image shape: (176, 256, 256)
+# path = "ds000244/sub-01/ses-00/anat/sub-01_ses-00_T1w.nii.gz"
+# Voxel size (mm): (1.0, 1.0, 1.1)
+# Image shape: (240, 256, 160)
+# path = "ds000113/sub-01/ses-forrestgump/anat/sub-01_ses-forrestgump_T2w.nii.gz"
+# Voxel size (mm): (0.6999283, 0.6666667, 0.6666667)
+# Image shape: (274, 384, 384)
+# path = "ds006001/anat/sub-C1_acq_FLASH20_200um.nii.gz"
+# Voxel size (mm): (0.2, 0.2, 0.2)
+# Image shape: (960, 840, 640)
+img = nib.load(path)
 data = img.get_fdata()
 
 voxel_sizes = img.header.get_zooms()
 print("Voxel size (mm):", voxel_sizes)
+print("Image shape:", data.shape)
 
 # Define função para obter slice de acordo com o plano
 def get_slice(idx):
