@@ -12,7 +12,7 @@ import nibabel as nib
 from tqdm import tqdm
 import traceback
 
-from degradation_function import funcao_degradacao_brain
+from degradation_function_v2 import lower_field_degradation
 from lmdb_npy import LmdbMakerNpy, np_to_npy_bytes
 from patch_utils import (
     ORIENTATIONS, scandir_paths, robust_percentile_normalize,
@@ -230,7 +230,7 @@ def process_to_lmdb(
                     if hr_from_input:
                         img_hr = sl.copy()
                     else:
-                        res_hr = funcao_degradacao_brain(sl, preset=preset_brain, seed=seed)
+                        res_hr = lower_field_degradation(sl, preset=preset_brain, seed=seed)
                         img_hr = np.asarray(res_hr["imagem_7t"], dtype=np.float32)
 
                     hH, wH = img_hr.shape
@@ -265,7 +265,7 @@ def process_to_lmdb(
 
                     # LRs por escala (somente se HR aprovou)
                     for scale in scales:
-                        res_lr = funcao_degradacao_brain(sl, preset=preset_brain, seed=seed)
+                        res_lr = lower_field_degradation(sl, preset=preset_brain, seed=seed)
                         img_lr = np.asarray(res_lr["imagem_3t"], dtype=np.float32)
 
                         crop_lr = crop_hr // scale
@@ -340,16 +340,16 @@ def main():
     ap.add_argument("--scales", nargs="*", type=int, default=[2])
     ap.add_argument("--axes", nargs="*", default=["axial", "coronal", "sagittal"],
                     choices=["axial", "coronal", "sagittal"])
-    ap.add_argument("--crop_hr", type=int, default=480)
-    ap.add_argument("--step_hr", type=int, default=240)
+    ap.add_argument("--crop_hr", type=int, default=128)
+    ap.add_argument("--step_hr", type=int, default=64)
     ap.add_argument("--thresh_size", type=int, default=0)
     ap.add_argument("--dark_thr01", type=float, default=20.0/255.0, help="Limiar 0..1 p/ patch escuro (ex.: 20/255 ≈ 0.0784)")
     ap.add_argument("--dark_pct", type=float, default=0.7, help="Fraç. mínima de pixels < limiar p/ descartar o patch")
     ap.add_argument("--dtype_out", choices=["float32", "float16"], default="float32")
-    ap.add_argument("--preset", default="3T_T1W")
+    ap.add_argument("--preset", default="3tFlash")
     ap.add_argument("--pmin", type=float, default=1.0)
     ap.add_argument("--pmax", type=float, default=99.0)
-    ap.add_argument("--map_size_gb", type=float, default=80.0)
+    ap.add_argument("--map_size_gb", type=float, default=200.0)
     ap.add_argument("--hr_from_input", action="store_true",
                     help="Se setado: HR = slice normalizado do volume (sem passar na função).", default=True)
     ap.add_argument("--seed", type=int, default=123)

@@ -610,18 +610,36 @@ def funcao_degradacao_brain(
 # ===============================
 # Como usar (exemplos)
 # ===============================
-# if __name__ == "__main__":
-    # import nibabel as nib
+if __name__ == "__main__":
+    import nibabel as nib
 
-    # path = "ds006001/anat/sub-C1_acq_FLASH20_200um.nii.gz"
-    # img = nib.load(path)
-    # data = img.get_fdata()  # ou use dataobj para RAM baixa
-    # slice_idx = data.shape[2] // 2
-    # slice_2d = data[:, :, slice_idx]
+    path = "ds006001/anat/sub-C1_acq_FLASH20_200um.nii.gz"
+    img = nib.load(path)
+    data = img.get_fdata()  # ou use dataobj para RAM baixa
+    slice_idx = data.shape[2] // 2
+    slice_2d = data[:, :, slice_idx]
 
-    # # 1) Preset 3T T1w (cérebro)
-    # res = funcao_degradacao_brain(slice_2d, preset="3T_T1W", save=True, seed=123)
-    # print("3T_T1W:", res["imagem_7t"].shape, "->", res["imagem_3t"].shape)
+    # 1) Preset 3T T1w (cérebro)
+    res = funcao_degradacao_brain(slice_2d, preset="3T_T1W", save=True, seed=123)
+    print("3T_T1W:", res["imagem_7t"].shape, "->", res["imagem_3t"].shape)
+
+    # create image with both 7T and 3T images and labels
+    import matplotlib.pyplot as plt
+    # put images in vertical stacked
+    fig, axs = plt.subplots(2, 1, figsize=(10, 10))
+    # first 3t
+    axs[1].imshow(res["imagem_7t"], cmap='gray')
+    axs[1].set_title("Image 7T")
+    axs[1].axis('off')
+    # then 3t
+    axs[0].imshow(res["imagem_3t"], cmap='gray')
+    axs[0].set_title("Image 3T")
+    axs[0].axis('off')
+    plt.tight_layout()
+    plt.show()
+    # # Uncomment to save the figure
+    fig.savefig("output_3T_T1W.png")
+
 
     # # 2) Preset 1.5T T1w com override (manter shape)
     # res2 = funcao_degradacao_brain(slice_7t, preset="15T_T1W", keep_size=True, crop_factors=(0.33, 0.33), seed=123)
